@@ -1,5 +1,5 @@
 /// <reference path="../typings/hapi/hapi.d.ts" />
-/// <reference path="../typings/i18next//i18next.d.ts" />
+/// <reference path="../typings/i18next/i18next.d.ts" />
 /// <reference path="../typings/accept-language-parser.d.ts" />
 import i18n = require('i18next');
 import util = require('util');
@@ -59,9 +59,7 @@ export var register: HapiPluginRegister = function (server, options: any, next):
 	i18n.init(i18nextOptions);
 
 	server.ext('onPreHandler', (request: Hapi.Request, reply: any): void => {
-		var translations = {},
-			headerLangs: any,
-			fromPath: string,
+		var headerLangs: any,
 			language: string,
 			temp: string;
 
@@ -100,7 +98,19 @@ export var register: HapiPluginRegister = function (server, options: any, next):
 	});
 
 	function trySetLanguage (language): string|typeof undefined {
-		return isLanguageSupported(language) ? language : undefined;
+		var supportedLanguage;
+
+		if (isLanguageSupported(language)) {
+			supportedLanguage = language;
+		} else if (language.indexOf('-') > -1) {
+			var primaryFallback = language.split('-')[0];
+
+			if (isLanguageSupported(primaryFallback)) {
+				supportedLanguage = primaryFallback;
+			}
+		}
+
+		return supportedLanguage;
 	}
 
 	function isLanguageSupported (language: string): boolean {
