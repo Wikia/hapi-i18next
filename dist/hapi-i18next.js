@@ -1,5 +1,6 @@
+"use strict";
 /// <reference path="../typings/hapi/hapi.d.ts" />
-/// <reference path="../typings/i18next//i18next.d.ts" />
+/// <reference path="../typings/i18next/i18next.d.ts" />
 /// <reference path="../typings/accept-language-parser.d.ts" />
 var i18n = require('i18next');
 var util = require('util');
@@ -44,7 +45,7 @@ exports.register = function (server, options, next) {
     });
     i18n.init(i18nextOptions);
     server.ext('onPreHandler', function (request, reply) {
-        var translations = {}, headerLangs, fromPath, language, temp;
+        var headerLangs, language, temp;
         if (!language && typeof i18nextOptions.detectLngFromPath === 'number') {
             // if force is true, then we set lang even if it is not in supported languages list
             temp = detectLanguageFromPath(request);
@@ -74,7 +75,17 @@ exports.register = function (server, options, next) {
         });
     });
     function trySetLanguage(language) {
-        return isLanguageSupported(language) ? language : undefined;
+        var supportedLanguage;
+        if (isLanguageSupported(language)) {
+            supportedLanguage = language;
+        }
+        else if (language && language.indexOf('-') > -1) {
+            var primaryFallbackLanguage = language.split('-')[0];
+            if (isLanguageSupported(primaryFallbackLanguage)) {
+                supportedLanguage = primaryFallbackLanguage;
+            }
+        }
+        return supportedLanguage;
     }
     function isLanguageSupported(language) {
         var supported = i18nextOptions.supportedLngs;
