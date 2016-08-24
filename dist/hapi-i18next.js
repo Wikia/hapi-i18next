@@ -122,5 +122,5 @@ exports.register = function (server, options, next) {
 };
 exports.register.attributes = {
     name: 'hapi-i18next',
-    version: '2.0.2'
+    version: '2.3.0'
 };
