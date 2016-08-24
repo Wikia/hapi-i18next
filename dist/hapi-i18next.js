@@ -79,10 +79,10 @@ exports.register = function (server, options, next) {
         if (isLanguageSupported(language)) {
             supportedLanguage = language;
         }
-        else if (language.indexOf('-') > -1) {
-            var primaryFallback = language.split('-')[0];
-            if (isLanguageSupported(primaryFallback)) {
-                supportedLanguage = primaryFallback;
+        else if (language && language.indexOf('-') > -1) {
+            var primaryFallbackLanguage = language.split('-')[0];
+            if (isLanguageSupported(primaryFallbackLanguage)) {
+                supportedLanguage = primaryFallbackLanguage;
             }
         }
         return supportedLanguage;

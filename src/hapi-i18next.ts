@@ -102,11 +102,11 @@ export var register: HapiPluginRegister = function (server, options: any, next):
 
 		if (isLanguageSupported(language)) {
 			supportedLanguage = language;
-		} else if (language.indexOf('-') > -1) {
-			var primaryFallback = language.split('-')[0];
+		} else if (language && language.indexOf('-') > -1) {
+			var primaryFallbackLanguage = language.split('-')[0];
 
-			if (isLanguageSupported(primaryFallback)) {
-				supportedLanguage = primaryFallback;
+			if (isLanguageSupported(primaryFallbackLanguage)) {
+				supportedLanguage = primaryFallbackLanguage;
 			}
 		}
 
