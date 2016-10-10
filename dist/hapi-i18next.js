@@ -46,34 +46,42 @@ exports.register = function (server, options, next) {
     i18n.init(i18nextOptions);
     server.ext('onPreHandler', function (request, reply) {
         var headerLangs, language, temp;
-        if (!language && typeof i18nextOptions.detectLngFromPath === 'number') {
-            // if force is true, then we set lang even if it is not in supported languages list
-            temp = detectLanguageFromPath(request);
-            if (i18nextOptions.forceDetectLngFromPath || isLanguageSupported(temp)) {
-                language = temp;
+        if (isInternalCall(request)) {
+            reply.continue();
+        }
+        else {
+            if (!language && typeof i18nextOptions.detectLngFromPath === 'number') {
+                // if force is true, then we set lang even if it is not in supported languages list
+                temp = detectLanguageFromPath(request);
+                if (i18nextOptions.forceDetectLngFromPath || isLanguageSupported(temp)) {
+                    language = temp;
+                }
             }
-        }
-        if (!language && i18nextOptions.detectLngFromQueryString) {
-            temp = detectLanguageFromQS(request);
-            language = trySetLanguage(temp);
-        }
-        if (!language && i18nextOptions.useCookie) {
-            // Reads language if it was set from previous session or recently by client
-            temp = detectLanguageFromCookie(request);
-            language = trySetLanguage(temp);
-        }
-        if (!language && i18nextOptions.detectLngFromHeaders) {
-            headerLangs = detectLanguageFromHeaders(request);
-            headerLangs.some(function (headerLang) {
-                language = trySetLanguage(headerLang);
-                return !!language;
+            if (!language && i18nextOptions.detectLngFromQueryString) {
+                temp = detectLanguageFromQS(request);
+                language = trySetLanguage(temp);
+            }
+            if (!language && i18nextOptions.useCookie) {
+                // Reads language if it was set from previous session or recently by client
+                temp = detectLanguageFromCookie(request);
+                language = trySetLanguage(temp);
+            }
+            if (!language && i18nextOptions.detectLngFromHeaders) {
+                headerLangs = detectLanguageFromHeaders(request);
+                headerLangs.some(function (headerLang) {
+                    language = trySetLanguage(headerLang);
+                    return !!language;
+                });
+            }
+            language = language || i18nextOptions.fallbackLng;
+            i18n.setLng(language, function () {
+                reply.continue();
             });
         }
-        language = language || i18nextOptions.fallbackLng;
-        i18n.setLng(language, function () {
-            reply.continue();
-        });
     });
+    function isInternalCall(request) {
+        return null == request.headers['referer'];
+    }
     function trySetLanguage(language) {
         var supportedLanguage;
         if (isLanguageSupported(language)) {
@@ -122,5 +130,5 @@ exports.register = function (server, options, next) {
 };
 exports.register.attributes = {
     name: 'hapi-i18next',
-    version: '2.3.0'
+    version: '2.4.0'
 };
