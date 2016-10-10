@@ -63,39 +63,47 @@ export var register: HapiPluginRegister = function (server, options: any, next):
 			language: string,
 			temp: string;
 
-		if (!language && typeof i18nextOptions.detectLngFromPath === 'number') {
-			// if force is true, then we set lang even if it is not in supported languages list
-			temp = detectLanguageFromPath(request);
-			if (i18nextOptions.forceDetectLngFromPath || isLanguageSupported(temp)) {
-				language = temp;
+		if (isInternalCall(request)) {
+			reply.continue();
+		} else {
+			if (!language && typeof i18nextOptions.detectLngFromPath === 'number') {
+				// if force is true, then we set lang even if it is not in supported languages list
+				temp = detectLanguageFromPath(request);
+				if (i18nextOptions.forceDetectLngFromPath || isLanguageSupported(temp)) {
+					language = temp;
+				}
 			}
-		}
 
-		if (!language && i18nextOptions.detectLngFromQueryString) {
-			temp = detectLanguageFromQS(request);
-			language = trySetLanguage(temp);
-		}
+			if (!language && i18nextOptions.detectLngFromQueryString) {
+				temp = detectLanguageFromQS(request);
+				language = trySetLanguage(temp);
+			}
 
-		if (!language && i18nextOptions.useCookie) {
-			// Reads language if it was set from previous session or recently by client
-			temp = detectLanguageFromCookie(request);
-			language = trySetLanguage(temp);
-		}
+			if (!language && i18nextOptions.useCookie) {
+				// Reads language if it was set from previous session or recently by client
+				temp = detectLanguageFromCookie(request);
+				language = trySetLanguage(temp);
+			}
 
-		if (!language && i18nextOptions.detectLngFromHeaders) {
-			headerLangs = detectLanguageFromHeaders(request);
-			headerLangs.some(function (headerLang): boolean {
-				language = trySetLanguage(headerLang);
-				return !!language;
+			if (!language && i18nextOptions.detectLngFromHeaders) {
+				headerLangs = detectLanguageFromHeaders(request);
+				headerLangs.some(function (headerLang): boolean {
+					language = trySetLanguage(headerLang);
+					return !!language;
+				});
+			}
+
+			language = language || i18nextOptions.fallbackLng;
+
+			i18n.setLng(language, () => {
+				reply.continue();
 			});
 		}
-
-		language = language || i18nextOptions.fallbackLng;
-
-		i18n.setLng(language, () => {
-			reply.continue();
-		});
 	});
+
+	function isInternalCall (request: Hapi.Request): boolean {
+		return null == request.headers['referer'];
+	}
 
 	function trySetLanguage (language): string|typeof undefined {
 		var supportedLanguage;
