@@ -165,5 +165,5 @@ export var register: HapiPluginRegister = function (server, options: any, next):
 
 register.attributes = {
 	name: 'hapi-i18next',
-	version: '2.3.0'
+	version: '2.4.0'
 };
